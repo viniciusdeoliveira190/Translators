@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Tradutor Nórdico</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #0f172a;
+  color: white;
+}
+
+.container {
+  width: 90%;
+  max-width: 500px;
+}
+
+/* Título */
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Input */
+input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+/* Botão */
+button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 15px;
+  background: #334155;
+  color: white;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* Cards */
+.card {
+  border-radius: 15px;
+  padding: 15px;
+  margin-bottom: 10px;
+  color: white;
+}
+
+/* 🇸🇪 Suécia */
+.sueco {
+  background: linear-gradient(135deg, #006aa7, #fecc00);
+}
+
+/* 🇩🇰 Dinamarca */
+.dinamarques {
+  background: linear-gradient(135deg, #c60c30, #ffffff);
+  color: black;
+}
+
+/* 🇳🇴 Noruega */
+.noruegues {
+  background: linear-gradient(135deg, #ba0c2f, #00205b);
+}
+
+/* Header idioma */
+.idioma {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+}
+
+/* Botão áudio */
+.audio-btn {
+  background: rgba(0,0,0,0.2);
+  border: none;
+  padding: 5px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Texto */
+p {
+  margin-top: 10px;
+}
+
+/* Similaridade */
+.sim {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 14px;
+  opacity: 0.9;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>🌍 Tradutor Nórdico</h2>
+
+  <input type="text" id="texto" placeholder="Digite algo...">
+  <button onclick="traduzir()">Traduzir</button>
+
+  <div class="card sueco">
+    <div class="idioma">
+      🇸🇪 Sueco
+      <button class="audio-btn" onclick="falar(svTexto, 'sv')">🔊</button>
+    </div>
+    <p id="sv"></p>
+  </div>
+
+  <div class="card dinamarques">
+    <div class="idioma">
+      🇩🇰 Dinamarquês
+      <button class="audio-btn" onclick="falar(daTexto, 'da')">🔊</button>
+    </div>
+    <p id="da"></p>
+  </div>
+
+  <div class="card noruegues">
+    <div class="idioma">
+      🇳🇴 Norueguês
+      <button class="audio-btn" onclick="falar(noTexto, 'nb')">🔊</button>
+    </div>
+    <p id="no"></p>
+  </div>
+
+  <div class="sim" id="sim"></div>
+</div>
+
+<script>
+let svTexto = "";
+let daTexto = "";
+let noTexto = "";
+
+// 🔥 Áudio estilo Google Tradutor
+function falar(texto, lang) {
+  if (!texto) return;
+
+  const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(texto)}&tl=${lang}&client=tw-ob`;
+  
+  const audio = new Audio(url);
+  audio.play();
+}
+
+async function traduzir() {
+  const texto = document.getElementById("texto").value;
+  if (!texto) return;
+
+  try {
+    async function traduzirPara(lang) {
+      const res = await fetch(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=pt&tl=${lang}&dt=t&q=${encodeURIComponent(texto)}`
+      );
+      const data = await res.json();
+      return data[0][0][0];
+    }
+
+    svTexto = await traduzirPara("sv");
+    daTexto = await traduzirPara("da");
+    noTexto = await traduzirPara("nb");
+
+    document.getElementById("sv").innerText = svTexto;
+    document.getElementById("da").innerText = daTexto;
+    document.getElementById("no").innerText = noTexto;
+
+   function similaridade(a, b) {
+  const palavrasA = a.split(" ");
+  const palavrasB = b.split(" ");
+
+  let iguais = 0;
+
+  palavrasA.forEach(p => {
+    if (palavrasB.includes(p)) iguais++;
+  });
+
+  const valor = iguais / Math.max(palavrasA.length, palavrasB.length);
+
+  return (valor * 100).toFixed(0) + "%";
+}
+    const sim_sv_da = similaridade(svTexto, daTexto);
+    const sim_sv_no = similaridade(svTexto, noTexto);
+    const sim_da_no = similaridade(daTexto, noTexto);
+
+    document.getElementById("sim").innerText =
+      `Similaridade → SV-DA: ${sim_sv_da} | SV-NO: ${sim_sv_no} | DA-NO: ${sim_da_no}`;
+
+  } catch (e) {
+    alert("Erro ao traduzir 😢");
+  }
+}
+</script>
+
+</body>
+</html>
